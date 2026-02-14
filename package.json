@@ -9,7 +9,9 @@
     "direct": "node index.js",
     "api": "node api-server.js",
     "api:dev": "nodemon api-server.js",
-    "test:api": "node test-api.js"
+    "test:api": "node test-api.js",
+    "web": "node web-dashboard.js",
+    "web:dev": "nodemon web-dashboard.js"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",
@@ -22,6 +24,7 @@
     "multer": "^2.0.2",
     "pdf-parse": "^1.1.1",
     "pino": "^8.17.2",
+    "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",
     "xlsx": "^0.18.5"
   }

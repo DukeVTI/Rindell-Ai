@@ -6,4 +6,5 @@ uploads/
 session/
 auth/
 auth_info/
+user-data/
 *.log
