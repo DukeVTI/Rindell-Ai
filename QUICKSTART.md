@@ -1,5 +1,11 @@
 # 🚀 Quick Start Guide - Self-Hosted Rindell AI
 
+## 🤔 First Time Here?
+
+**Not sure what Rindell AI is or how it works?** Read [**HOW-IT-WORKS.md**](HOW-IT-WORKS.md) first for a complete, beginner-friendly explanation with diagrams!
+
+---
+
 ## What You Need
 
 1. **Groq API Key** (Free!)
