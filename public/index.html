@@ -919,7 +919,12 @@
 
         // Check for QR code
         async function checkForQRCode() {
+            let qrAttempts = 0;
+            const maxQrAttempts = 30; // 30 attempts * 2s = 60 seconds timeout
+            
             const qrInterval = setInterval(async () => {
+                qrAttempts++;
+                
                 try {
                     const response = await fetch(`/api/whatsapp/qr/${userId}`);
                     const data = await response.json();
@@ -944,8 +949,38 @@
                     if (data.connected) {
                         clearInterval(qrInterval);
                     }
+                    
+                    // Timeout after max attempts
+                    if (qrAttempts >= maxQrAttempts && !data.qrCode && !data.connected) {
+                        clearInterval(qrInterval);
+                        document.getElementById('loadingQR').classList.add('hidden');
+                        showStatus(
+                            'QR code generation timed out. Please refresh the page to try again.',
+                            'error'
+                        );
+                        
+                        // Show retry option
+                        const qrContainer = document.getElementById('qrContainer');
+                        qrContainer.classList.remove('hidden');
+                        qrContainer.innerHTML = `
+                            <div style="text-align: center; padding: 2rem;">
+                                <p style="color: var(--danger); margin-bottom: 1rem;">
+                                    ⚠️ QR code didn't load. This might be due to a connection issue.
+                                </p>
+                                <button class="btn" onclick="location.reload()">
+                                    Retry Connection
+                                </button>
+                            </div>
+                        `;
+                    }
                 } catch (error) {
                     console.error('Error checking QR:', error);
+                    
+                    // If we get repeated errors, show message
+                    if (qrAttempts >= 10) {
+                        clearInterval(qrInterval);
+                        showStatus('Error connecting to server. Please check your connection.', 'error');
+                    }
                 }
             }, 2000);
         }

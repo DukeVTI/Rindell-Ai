@@ -154,11 +154,16 @@ async function startWhatsAppForUser(userId) {
     throw new Error('User session not found');
   }
   
-  // Check if reconnection is already in progress
+  // Check if reconnection is already in progress (and not exhausted)
   const existingInstance = whatsappInstances.get(userId);
   if (existingInstance && existingInstance.reconnecting) {
-    console.log(`⏸️  Reconnection already in progress for user: ${session.name}`);
-    return;
+    // If attempts are exhausted, we should proceed with a fresh start
+    if (existingInstance.reconnectAttempts >= existingInstance.maxReconnectAttempts) {
+      console.log(`🔄 Reconnection exhausted, starting fresh for user: ${session.name}`);
+    } else {
+      console.log(`⏸️  Reconnection already in progress for user: ${session.name}`);
+      return;
+    }
   }
   
   // Clean up old socket if it exists
@@ -174,6 +179,8 @@ async function startWhatsAppForUser(userId) {
   const authDir = path.join(CONFIG.DATA_DIR, userId, 'auth');
   const logger = pino({ level: 'silent' });
   
+  console.log(`🔌 Starting WhatsApp connection for user: ${session.name}`);
+  
   const { state, saveCreds } = await useMultiFileAuthState(authDir);
   
   const sock = makeWASocket({
@@ -184,12 +191,13 @@ async function startWhatsAppForUser(userId) {
   });
   
   // Store instance with reconnection tracking
+  // Important: Reset reconnectAttempts to 0 for fresh connection
   const instance = {
     sock,
     connected: false,
     qrCode: null,
     reconnecting: false,
-    reconnectAttempts: existingInstance?.reconnectAttempts || 0,
+    reconnectAttempts: 0, // Always start fresh at 0
     maxReconnectAttempts: 10,
     reconnectDelay: 5000,
   };
@@ -359,13 +367,26 @@ app.post('/api/whatsapp/connect/:userId', async (req, res) => {
       });
     }
     
-    // Check if reconnection is in progress
+    // Check if reconnection is in progress (but not exhausted)
     if (existing && existing.reconnecting) {
-      return res.json({
-        success: true,
-        message: 'Connection in progress',
-        reconnecting: true,
-      });
+      // If reconnection attempts are exhausted, force a new connection
+      if (existing.reconnectAttempts >= existing.maxReconnectAttempts) {
+        console.log(`🔄 Reconnection exhausted for ${session.name}, starting fresh connection`);
+        cleanupWhatsAppConnection(userId);
+        // Continue to start new connection
+      } else {
+        return res.json({
+          success: true,
+          message: 'Connection in progress',
+          reconnecting: true,
+        });
+      }
+    }
+    
+    // If there's an existing instance that's not connected, clean it up
+    if (existing && !existing.connected && !existing.reconnecting) {
+      console.log(`🧹 Cleaning up stale connection for ${session.name}`);
+      cleanupWhatsAppConnection(userId);
     }
     
     // Start WhatsApp connection
