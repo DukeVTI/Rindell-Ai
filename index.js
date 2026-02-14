@@ -18,6 +18,7 @@ const FormData = require('form-data')
 const axios = require('axios')
 const qrcode = require('qrcode-terminal')
 const pino = require('pino')
+require('dotenv').config()
 
 /* ═══════════════════════════════════════════════════════════
    SUPPRESS BAILEYS CONSOLE SPAM
@@ -51,9 +52,10 @@ console.error = function(...args) {
    ═══════════════════════════════════════════════════════════ */
 
 const CONFIG = {
-  ASSISTANT_NUMBER: '2349167066476@c.us',
-  MAKE_WEBHOOK_URL: 'https://hook.eu2.make.com/2uyff0akin8p1jlkp527qu9tffr45887',
-  WEBHOOK_TIMEOUT: 120000,
+  ASSISTANT_NUMBER: process.env.ASSISTANT_NUMBER || '2349167066476@c.us',
+  // Use API_SERVER_URL for self-hosted or MAKE_WEBHOOK_URL for legacy Make.com
+  WEBHOOK_URL: process.env.API_SERVER_URL || process.env.MAKE_WEBHOOK_URL || 'http://localhost:3000/analyze',
+  WEBHOOK_TIMEOUT: parseInt(process.env.WEBHOOK_TIMEOUT) || 120000,
   UPLOADS_DIR: path.join(__dirname, 'uploads'),
   AUTH_DIR: path.join(__dirname, 'auth'),
   LOGS_DIR: path.join(__dirname, 'logs'),
@@ -66,6 +68,13 @@ const CONFIG = {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Excel Spreadsheet',
     'text/plain': 'Text File'
   }
+}
+
+// Warn if using default localhost URL
+if (!process.env.API_SERVER_URL && !process.env.MAKE_WEBHOOK_URL) {
+  console.warn('⚠️  WARNING: No API_SERVER_URL or MAKE_WEBHOOK_URL configured in .env');
+  console.warn('   Using default: http://localhost:3000/analyze');
+  console.warn('   Make sure the API server is running locally!');
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -248,7 +257,7 @@ class MessageHandler {
       const filePath = await FileManager.saveFile(buffer, fileName)
       Logger.success(`Saved to: ${filePath}`)
 
-      Logger.network('Sending to Make.com webhook')
+      Logger.network('Sending to AI analysis API')
       const form = new FormData()
       form.append('file', buffer, {
         filename: fileName,
@@ -262,7 +271,7 @@ class MessageHandler {
       const startTime = Date.now()
 
       try {
-        const response = await axios.post(CONFIG.MAKE_WEBHOOK_URL, form, {
+        const response = await axios.post(CONFIG.WEBHOOK_URL, form, {
           headers: { ...form.getHeaders() },
           timeout: CONFIG.WEBHOOK_TIMEOUT,
           maxContentLength: Infinity,
@@ -270,7 +279,7 @@ class MessageHandler {
         })
 
         const processingTime = ((Date.now() - startTime) / 1000).toFixed(1)
-        Logger.success(`Make.com responded in ${processingTime}s`)
+        Logger.success(`AI API responded in ${processingTime}s`)
 
         let summary = null
         
@@ -381,7 +390,7 @@ ${data.summary}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ *Powered by Rindell AI*
-🤖 Analysis by Claude via Make.com`
+🤖 Analysis by Groq AI`
   }
 }
 
