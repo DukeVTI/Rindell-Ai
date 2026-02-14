@@ -4,7 +4,10 @@
 
 ## 🚀 Ready to Deploy to Production?
 
-**[→ VPS Deployment Guide](VPS-DEPLOYMENT.md)** - Complete step-by-step instructions for deploying to a VPS with NGINX, SSL, PM2, and more!
+**Choose your deployment method:**
+
+- **[→ Full VPS Deployment with Domain & SSL](VPS-DEPLOYMENT.md)** - Complete guide with NGINX, SSL, and domain setup
+- **[→ Port-Based VPS Deployment (IP Access)](VPS-DEPLOYMENT-PORTS.md)** - Deploy on VPS with other services using custom ports ⭐ **New!**
 
 ## 🤔 New Here? Start with [HOW-IT-WORKS.md](HOW-IT-WORKS.md)
 
@@ -392,7 +395,8 @@ Log Levels:
 - **[QUICKSTART.md](QUICKSTART.md)** - 5-minute quick start guide
 
 ### For Platform Owners
-- **[VPS-DEPLOYMENT.md](VPS-DEPLOYMENT.md)** - 🚀 **Production VPS deployment guide** (NGINX, SSL, PM2)
+- **[VPS-DEPLOYMENT.md](VPS-DEPLOYMENT.md)** - 🚀 Production VPS deployment (domain, NGINX, SSL, PM2)
+- **[VPS-DEPLOYMENT-PORTS.md](VPS-DEPLOYMENT-PORTS.md)** - 🔧 Port-based deployment (IP access, custom ports) ⭐ **New!**
 - **[PLATFORM-OWNER.md](PLATFORM-OWNER.md)** - Quick start guide for owners
 - **[WEB-PLATFORM.md](WEB-PLATFORM.md)** - Complete web platform documentation
 - **[SELF-HOSTED.md](SELF-HOSTED.md)** - Self-hosted API server guide
