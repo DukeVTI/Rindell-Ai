@@ -319,7 +319,7 @@ Groq AI → Summary text → Rindell AI Bot → Formats message → Sends to you
 ### 2. **Groq AI**
 - **What it does**: Reads and understands documents using AI
 - **Why we use it**: Fast, free tier is generous, powerful
-- **Cost**: Free for most usage, ~$0.01 per large document
+- **Cost**: Free for most usage (Groq offers generous free tier). Heavy usage: ~$0.01 per large document (50+ pages or 100KB+ of extracted text)
 
 ### 3. **Express Server** (Web Platform)
 - **What it does**: Serves the web interface
