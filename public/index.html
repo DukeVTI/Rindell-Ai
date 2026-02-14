@@ -966,6 +966,29 @@
                         
                         // Update stats
                         document.getElementById('docsProcessed').textContent = data.documentsProcessed || 0;
+                    } else if (data.reconnecting && data.reconnectAttempts) {
+                        // Show reconnection status
+                        const qrInstructions = document.querySelector('.qr-instructions');
+                        if (qrInstructions) {
+                            qrInstructions.innerHTML = `
+                                <strong>Connection Status:</strong><br>
+                                Attempting to connect... (${data.reconnectAttempts}/${data.maxReconnectAttempts} attempts)<br>
+                                <em style="color: var(--gray-500); font-size: 0.9rem;">Please scan the QR code above to connect WhatsApp.</em>
+                            `;
+                        }
+                    } else if (data.reconnectAttempts >= data.maxReconnectAttempts) {
+                        // Max attempts reached
+                        clearInterval(checkInterval);
+                        showStatus('Connection failed after multiple attempts. Please refresh the page to try again.', 'error');
+                        
+                        const qrInstructions = document.querySelector('.qr-instructions');
+                        if (qrInstructions) {
+                            qrInstructions.innerHTML = `
+                                <strong style="color: var(--danger);">Connection Failed</strong><br>
+                                Maximum reconnection attempts reached.<br>
+                                Please <a href="/" style="color: var(--primary); text-decoration: underline;">refresh the page</a> to try again.
+                            `;
+                        }
                     }
                 } catch (error) {
                     console.error('Error checking status:', error);
