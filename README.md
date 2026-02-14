@@ -2,6 +2,10 @@
 
 > **Now a Complete SaaS Platform!** Beautiful web interface for AI-powered WhatsApp document analysis. No terminal, no technical setup - just visit a webpage and connect!
 
+## 🚀 Ready to Deploy to Production?
+
+**[→ VPS Deployment Guide](VPS-DEPLOYMENT.md)** - Complete step-by-step instructions for deploying to a VPS with NGINX, SSL, PM2, and more!
+
 ## 🤔 New Here? Start with [HOW-IT-WORKS.md](HOW-IT-WORKS.md)
 
 **Don't know where to begin?** Read our friendly guide: [**How Does Rindell AI Work?**](HOW-IT-WORKS.md)
@@ -388,6 +392,7 @@ Log Levels:
 - **[QUICKSTART.md](QUICKSTART.md)** - 5-minute quick start guide
 
 ### For Platform Owners
+- **[VPS-DEPLOYMENT.md](VPS-DEPLOYMENT.md)** - 🚀 **Production VPS deployment guide** (NGINX, SSL, PM2)
 - **[PLATFORM-OWNER.md](PLATFORM-OWNER.md)** - Quick start guide for owners
 - **[WEB-PLATFORM.md](WEB-PLATFORM.md)** - Complete web platform documentation
 - **[SELF-HOSTED.md](SELF-HOSTED.md)** - Self-hosted API server guide
@@ -398,7 +403,7 @@ Log Levels:
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute
 
 ### Additional Guides
-- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute quick start
+- **[EXAMPLES.md](EXAMPLES.md)** - Usage examples and troubleshooting
 - **[EXAMPLES.md](EXAMPLES.md)** - Usage examples and troubleshooting
 
 ## 🤝 Contributing
