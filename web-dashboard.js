@@ -129,12 +129,46 @@ const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 
 /**
+ * Cleanup WhatsApp connection for a user
+ */
+function cleanupWhatsAppConnection(userId) {
+  const instance = whatsappInstances.get(userId);
+  if (instance && instance.sock) {
+    try {
+      instance.sock.end();
+      instance.sock.removeAllListeners();
+      console.log(`🧹 Cleaned up WhatsApp connection for user ID: ${userId}`);
+    } catch (error) {
+      console.error(`⚠️  Error cleaning up connection:`, error.message);
+    }
+  }
+  whatsappInstances.delete(userId);
+}
+
+/**
  * Start WhatsApp connection for a user
  */
 async function startWhatsAppForUser(userId) {
   const session = getUserSession(userId);
   if (!session) {
     throw new Error('User session not found');
+  }
+  
+  // Check if reconnection is already in progress
+  const existingInstance = whatsappInstances.get(userId);
+  if (existingInstance && existingInstance.reconnecting) {
+    console.log(`⏸️  Reconnection already in progress for user: ${session.name}`);
+    return;
+  }
+  
+  // Clean up old socket if it exists
+  if (existingInstance && existingInstance.sock) {
+    try {
+      existingInstance.sock.end();
+      existingInstance.sock.removeAllListeners();
+    } catch (error) {
+      console.error(`⚠️  Error cleaning up old socket for ${session.name}:`, error.message);
+    }
   }
   
   const authDir = path.join(CONFIG.DATA_DIR, userId, 'auth');
@@ -149,12 +183,18 @@ async function startWhatsAppForUser(userId) {
     browser: ['Rindell AI', 'Chrome', '120.0'],
   });
   
-  // Store instance
-  whatsappInstances.set(userId, {
+  // Store instance with reconnection tracking
+  const instance = {
     sock,
     connected: false,
     qrCode: null,
-  });
+    reconnecting: false,
+    reconnectAttempts: existingInstance?.reconnectAttempts || 0,
+    maxReconnectAttempts: 10,
+    reconnectDelay: 5000,
+  };
+  
+  whatsappInstances.set(userId, instance);
   
   // Handle QR code
   sock.ev.on('connection.update', (update) => {
@@ -162,15 +202,18 @@ async function startWhatsAppForUser(userId) {
     
     if (qr) {
       // Store QR code for web display
-      const instance = whatsappInstances.get(userId);
       instance.qrCode = qr;
       session.qrCode = qr;
       console.log(`🔲 QR code generated for user: ${session.name}`);
+      
+      // Reset reconnect attempts on new QR code
+      instance.reconnectAttempts = 0;
     }
     
     if (connection === 'open') {
-      const instance = whatsappInstances.get(userId);
       instance.connected = true;
+      instance.reconnecting = false;
+      instance.reconnectAttempts = 0;
       session.whatsappConnected = true;
       
       // Save updated session
@@ -184,20 +227,49 @@ async function startWhatsAppForUser(userId) {
     }
     
     if (connection === 'close') {
-      const shouldReconnect = (lastDisconnect?.error instanceof Boom)
-        ? lastDisconnect.error.output?.statusCode !== DisconnectReason.loggedOut
-        : true;
-      
-      const instance = whatsappInstances.get(userId);
-      if (instance) {
-        instance.connected = false;
-      }
+      instance.connected = false;
       session.whatsappConnected = false;
       
-      if (shouldReconnect) {
-        console.log(`🔄 Reconnecting WhatsApp for user: ${session.name}`);
-        setTimeout(() => startWhatsAppForUser(userId), 5000);
+      const statusCode = lastDisconnect?.error instanceof Boom
+        ? lastDisconnect.error.output?.statusCode
+        : null;
+      
+      // Don't reconnect if logged out
+      if (statusCode === DisconnectReason.loggedOut) {
+        console.log(`🚪 User logged out: ${session.name}`);
+        instance.reconnecting = false;
+        whatsappInstances.delete(userId);
+        return;
       }
+      
+      // Check reconnection attempts
+      if (instance.reconnectAttempts >= instance.maxReconnectAttempts) {
+        console.log(`❌ Max reconnection attempts reached for user: ${session.name}`);
+        instance.reconnecting = false;
+        return;
+      }
+      
+      // Calculate exponential backoff delay
+      const delay = instance.reconnectDelay * Math.pow(1.5, instance.reconnectAttempts);
+      const maxDelay = 60000; // Max 1 minute
+      const actualDelay = Math.min(delay, maxDelay);
+      
+      instance.reconnectAttempts++;
+      instance.reconnecting = true;
+      
+      console.log(
+        `🔄 Reconnecting WhatsApp for user: ${session.name} ` +
+        `(attempt ${instance.reconnectAttempts}/${instance.maxReconnectAttempts}, ` +
+        `delay: ${Math.round(actualDelay / 1000)}s)`
+      );
+      
+      setTimeout(() => {
+        instance.reconnecting = false;
+        startWhatsAppForUser(userId).catch(error => {
+          console.error(`❌ Reconnection failed for ${session.name}:`, error.message);
+          instance.reconnecting = false;
+        });
+      }, actualDelay);
     }
   });
   
@@ -287,6 +359,15 @@ app.post('/api/whatsapp/connect/:userId', async (req, res) => {
       });
     }
     
+    // Check if reconnection is in progress
+    if (existing && existing.reconnecting) {
+      return res.json({
+        success: true,
+        message: 'Connection in progress',
+        reconnecting: true,
+      });
+    }
+    
     // Start WhatsApp connection
     await startWhatsAppForUser(userId);
     
@@ -339,8 +420,36 @@ app.get('/api/whatsapp/status/:userId', (req, res) => {
   
   res.json({
     connected: (instance && instance.connected) || false,
+    reconnecting: (instance && instance.reconnecting) || false,
+    reconnectAttempts: (instance && instance.reconnectAttempts) || 0,
+    maxReconnectAttempts: (instance && instance.maxReconnectAttempts) || 10,
     documentsProcessed: session.documentsProcessed || 0,
   });
+});
+
+/**
+ * Disconnect WhatsApp for user
+ */
+app.post('/api/whatsapp/disconnect/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+    const session = getUserSession(userId);
+    
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    
+    cleanupWhatsAppConnection(userId);
+    session.whatsappConnected = false;
+    
+    res.json({
+      success: true,
+      message: 'WhatsApp disconnected',
+    });
+  } catch (error) {
+    console.error('Error disconnecting WhatsApp:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
