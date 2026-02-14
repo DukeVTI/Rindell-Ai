@@ -27,6 +27,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 const CONFIG = {
   PORT: process.env.API_PORT || 3000,
   GROQ_API_KEY: process.env.GROQ_API_KEY,
+  // Default model: llama-3.1-70b-versatile offers the best balance of quality and speed
+  // For faster processing with simpler documents, use llama-3.1-8b-instant
+  // For maximum quality, use mixtral-8x7b-32768
   GROQ_MODEL: process.env.GROQ_MODEL || 'llama-3.1-70b-versatile',
   MAX_TEXT_LENGTH: 30000, // Characters to send to AI
 };
@@ -89,6 +92,9 @@ async function extractExcel(buffer) {
 
 /**
  * Extract text from PowerPoint (.pptx)
+ * Note: This is a simplified approach using mammoth. For better PowerPoint extraction,
+ * consider using a dedicated library like 'officegen-pptx' or 'pptxgenjs'.
+ * Current limitation: May not extract all text from complex presentations.
  */
 async function extractPowerPoint(buffer) {
   try {
@@ -96,7 +102,7 @@ async function extractPowerPoint(buffer) {
     // Note: This is a simplified approach. For better results, 
     // consider using a dedicated PPTX library
     const result = await mammoth.extractRawText({ buffer });
-    return result.value || 'PowerPoint content detected but text extraction limited.';
+    return result.value || 'PowerPoint content detected but text extraction limited. Consider converting to PDF for better results.';
   } catch (error) {
     throw new Error(`PowerPoint extraction failed: ${error.message}`);
   }
@@ -153,10 +159,21 @@ async function extractText(buffer, mimeType, filename) {
 async function analyzeWithGroq(text, filename, mimeType) {
   console.log(`🤖 Sending to Groq AI for analysis...`);
   
-  // Truncate text if too long
-  const truncatedText = text.length > CONFIG.MAX_TEXT_LENGTH 
-    ? text.substring(0, CONFIG.MAX_TEXT_LENGTH) + '\n\n[Document truncated due to length...]'
-    : text;
+  // Truncate text if too long, breaking at sentence boundary to maintain context
+  let truncatedText = text;
+  if (text.length > CONFIG.MAX_TEXT_LENGTH) {
+    // Find last complete sentence within limit
+    const truncated = text.substring(0, CONFIG.MAX_TEXT_LENGTH);
+    const lastPeriod = truncated.lastIndexOf('.');
+    const lastNewline = truncated.lastIndexOf('\n');
+    const breakPoint = Math.max(lastPeriod, lastNewline);
+    
+    truncatedText = breakPoint > CONFIG.MAX_TEXT_LENGTH * 0.8 
+      ? truncated.substring(0, breakPoint + 1)
+      : truncated;
+    
+    truncatedText += '\n\n[Document truncated for length - showing first section only]';
+  }
   
   const prompt = `You are a professional document analysis assistant. Analyze the following document and provide a comprehensive, well-structured summary.
 

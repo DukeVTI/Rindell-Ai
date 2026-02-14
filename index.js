@@ -70,6 +70,13 @@ const CONFIG = {
   }
 }
 
+// Warn if using default localhost URL
+if (!process.env.API_SERVER_URL && !process.env.MAKE_WEBHOOK_URL) {
+  console.warn('⚠️  WARNING: No API_SERVER_URL or MAKE_WEBHOOK_URL configured in .env');
+  console.warn('   Using default: http://localhost:3000/analyze');
+  console.warn('   Make sure the API server is running locally!');
+}
+
 /* ═══════════════════════════════════════════════════════════
    LOGGING UTILITIES
    ═══════════════════════════════════════════════════════════ */
