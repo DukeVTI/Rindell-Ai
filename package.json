@@ -8,7 +8,8 @@
     "dev": "nodemon start.js",
     "direct": "node index.js",
     "api": "node api-server.js",
-    "api:dev": "nodemon api-server.js"
+    "api:dev": "nodemon api-server.js",
+    "test:api": "node test-api.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.8",

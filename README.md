@@ -4,12 +4,13 @@
 
 ## 📋 Overview
 
-Rindell AI Assistant is a sophisticated WhatsApp bot built with Node.js that receives documents from users, processes them through an AI analysis pipeline (powered by Claude via Make.com), and returns intelligent summaries. It's designed to handle document analysis workflows seamlessly through WhatsApp messaging.
+Rindell AI Assistant is a sophisticated WhatsApp bot built with Node.js that receives documents from users and processes them through an AI analysis pipeline. It's designed to handle document analysis workflows seamlessly through WhatsApp messaging.
 
 ### Key Features
 
 - ✅ **Multi-Format Support**: Handles PDF, Word (.docx/.doc), PowerPoint, Excel, and text files
-- 🤖 **AI-Powered Analysis**: Processes documents through Claude AI via Make.com webhooks
+- 🤖 **AI-Powered Analysis**: Uses Groq AI for fast, cost-effective document analysis
+- 💰 **Cost-Effective**: Self-hosted option eliminates per-operation charges
 - 📱 **WhatsApp Integration**: Built on Baileys library for robust WhatsApp Web connectivity
 - 🔄 **Automatic Reconnection**: Smart reconnection logic with exponential backoff
 - 📊 **Comprehensive Logging**: Color-coded console logs and persistent file logging
@@ -19,18 +20,26 @@ Rindell AI Assistant is a sophisticated WhatsApp bot built with Node.js that rec
 
 ## 🏗️ Architecture
 
+### Self-Hosted Setup (Recommended)
 ```
 User sends document → WhatsApp (Baileys) → Bot receives → 
-Downloads & saves → Sends to Make.com webhook → 
-AI processes (Claude) → Receives summary → 
-Sends to admin & user
+Downloads & saves → Your VPS API Server → Groq AI → 
+Receives summary → Sends to admin & user
+```
+
+### Legacy Setup (Make.com)
+```
+User sends document → WhatsApp (Baileys) → Bot receives → 
+Downloads & saves → Make.com webhook → Claude AI → 
+Receives summary → Sends to admin & user
 ```
 
 ### Components
 
 1. **index.js** - Main bot logic with message handling and processing
 2. **start.js** - Wrapper script that filters Baileys spam output
-3. **package.json** - Dependencies and scripts configuration
+3. **api-server.js** - Self-hosted API server for document analysis (NEW!)
+4. **package.json** - Dependencies and scripts configuration
 
 ### Directory Structure
 
@@ -38,7 +47,9 @@ Sends to admin & user
 Rindell-Ai/
 ├── index.js           # Main bot application
 ├── start.js           # Clean startup wrapper
+├── api-server.js      # Self-hosted API server (NEW!)
 ├── package.json       # Project dependencies
+├── .env.example       # Environment variables template
 ├── auth/              # WhatsApp authentication data (gitignored)
 ├── uploads/           # Received documents (gitignored)
 └── logs/              # Daily log files (gitignored)
@@ -46,14 +57,53 @@ Rindell-Ai/
 
 ## 🚀 Getting Started
 
+> **💡 New!** We now offer a **self-hosted option** that eliminates Make.com costs!  
+> See [SELF-HOSTED.md](SELF-HOSTED.md) for the complete guide.
+
 ### Prerequisites
 
+**Option 1: Self-Hosted (Recommended)**
+- Node.js (v14 or higher)
+- WhatsApp account for bot
+- Groq API key (free at [groq.com](https://console.groq.com))
+- VPS or server (optional, can run locally)
+
+**Option 2: Make.com (Legacy)**
 - Node.js (v14 or higher)
 - WhatsApp account for bot
 - Make.com account with webhook configured
 - Claude AI access via Make.com
 
-### Installation
+### Quick Start (Self-Hosted)
+
+1. **Clone and install**
+   ```bash
+   git clone https://github.com/DukeVTI/Rindell-Ai.git
+   cd Rindell-Ai
+   npm install
+   ```
+
+2. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env and add your Groq API key
+   ```
+
+3. **Start API server** (in one terminal)
+   ```bash
+   npm run api
+   ```
+
+4. **Start WhatsApp bot** (in another terminal)
+   ```bash
+   npm start
+   ```
+
+5. **Scan QR code** with WhatsApp and start sending documents!
+
+📖 **Full guide:** See [SELF-HOSTED.md](SELF-HOSTED.md) for detailed setup instructions.
+
+### Installation (Legacy Make.com)
 
 1. **Clone the repository**
    ```bash
@@ -68,11 +118,11 @@ Rindell-Ai/
 
 3. **Configure the bot**
    
-   Edit the `CONFIG` object in `index.js`:
+   Create `.env` file or edit `CONFIG` object in `index.js`:
    ```javascript
    const CONFIG = {
      ASSISTANT_NUMBER: 'YOUR_WHATSAPP_NUMBER@c.us',  // Where summaries are sent
-     MAKE_WEBHOOK_URL: 'YOUR_MAKE_WEBHOOK_URL',      // Your Make.com webhook
+     WEBHOOK_URL: 'YOUR_MAKE_WEBHOOK_URL',           // Your Make.com webhook
      WEBHOOK_TIMEOUT: 120000,                         // Timeout in milliseconds
      // ... other settings
    }
@@ -89,9 +139,29 @@ Rindell-Ai/
 
 ### Running Options
 
-- **Production mode**: `npm start` - Uses start.js wrapper with spam filtering
-- **Development mode**: `npm run dev` - Uses nodemon for auto-restart
-- **Direct mode**: `npm run direct` - Runs index.js directly without wrapper
+**Bot Commands:**
+- `npm start` - Start WhatsApp bot (production mode with spam filtering)
+- `npm run dev` - Start bot in development mode with auto-restart
+- `npm run direct` - Run bot directly without spam filter wrapper
+
+**API Server Commands:**
+- `npm run api` - Start self-hosted API server
+- `npm run api:dev` - Start API server in development mode
+- `npm run test:api` - Test API server functionality
+
+## 💰 Cost Comparison
+
+| Feature | Self-Hosted (Groq) | Make.com (Claude) |
+|---------|-------------------|-------------------|
+| **Monthly Cost** | ~$0-5 (VPS only) | $9-29+ |
+| **Per-Operation** | FREE | Consumes credits |
+| **Scalability** | Unlimited | Limited by plan |
+| **Setup Time** | 10 minutes | 20 minutes |
+| **Speed** | Very Fast (Groq) | Fast |
+| **Control** | Full control | Limited |
+| **Privacy** | Your server | Third-party |
+
+**Savings: 80-95% for high-volume usage!**
 
 ## 📚 Supported File Types
 
