@@ -404,7 +404,6 @@ Log Levels:
 
 ### Additional Guides
 - **[EXAMPLES.md](EXAMPLES.md)** - Usage examples and troubleshooting
-- **[EXAMPLES.md](EXAMPLES.md)** - Usage examples and troubleshooting
 
 ## 🤝 Contributing
 
