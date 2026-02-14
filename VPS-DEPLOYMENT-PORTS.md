@@ -652,6 +652,63 @@ pm2 start rindell-ai
 # 4. User should refresh the page and scan QR code again
 ```
 
+**Symptom: QR code not loading/stuck on loading screen**
+
+**Solution:**
+The system now has built-in QR timeout protection (added in v1.2):
+- 60 second timeout for QR code generation
+- Shows error message if QR doesn't load
+- Provides retry button
+
+If QR code doesn't load:
+1. **Check if app is running:**
+   ```bash
+   pm2 status
+   pm2 logs rindell-ai --lines 20
+   ```
+
+2. **Check for errors in logs:**
+   ```bash
+   # Look for connection errors
+   pm2 logs rindell-ai | grep -i error
+   
+   # Look for QR generation
+   pm2 logs rindell-ai | grep "QR code"
+   ```
+
+3. **Common causes:**
+   - Stale reconnection state blocking new connections (now fixed)
+   - WhatsApp authentication directory has issues
+   - Network connectivity problems
+   - Baileys library connection issues
+
+4. **Force fresh connection:**
+   ```bash
+   # Stop app
+   pm2 stop rindell-ai
+   
+   # Clear all WhatsApp auth
+   rm -rf ~/Rindell-Ai/user-data/*/auth
+   
+   # Restart
+   pm2 restart rindell-ai
+   
+   # User refreshes page - should see QR within 10 seconds
+   ```
+
+5. **If still not working:**
+   ```bash
+   # Check Baileys is working
+   cd ~/Rindell-Ai
+   npm list @whiskeysockets/baileys
+   
+   # Reinstall if needed
+   npm install @whiskeysockets/baileys --save
+   
+   # Restart
+   pm2 restart rindell-ai
+   ```
+
 **Symptom: Page stuck on QR code screen**
 
 **Solution:**

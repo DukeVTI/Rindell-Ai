@@ -790,6 +790,53 @@ The system has built-in protection (v1.1+):
    # Should return 200 OK
    ```
 
+**Symptom: QR code not loading at all (stuck on "Generating QR code...")**
+
+**Solution:**
+System now has 60-second timeout (v1.2+):
+- Shows error message if QR doesn't generate
+- Provides retry button
+
+**If QR never loads:**
+1. **Check application logs:**
+   ```bash
+   pm2 logs rindell-ai-platform --lines 30
+   # Look for: "🔌 Starting WhatsApp connection"
+   # Look for: "🔲 QR code generated"
+   ```
+
+2. **Common causes:**
+   - Stale reconnection state (now auto-fixed)
+   - WhatsApp auth directory corrupted
+   - Baileys library issue
+   - Network problems
+
+3. **Force fresh connection:**
+   ```bash
+   pm2 stop rindell-ai-platform
+   
+   # Clear all auth
+   rm -rf ~/Rindell-Ai/user-data/*/auth
+   
+   # Restart
+   pm2 start rindell-ai-platform
+   
+   # Watch logs
+   pm2 logs rindell-ai-platform
+   
+   # User refreshes page - should see QR within 10 seconds
+   ```
+
+4. **Check Baileys installation:**
+   ```bash
+   cd ~/Rindell-Ai
+   npm list @whiskeysockets/baileys
+   
+   # If missing or outdated, reinstall
+   npm install
+   pm2 restart rindell-ai-platform
+   ```
+
 **Prevent connection issues:**
 - Ensure stable internet on VPS
 - Don't scan QR with multiple devices
