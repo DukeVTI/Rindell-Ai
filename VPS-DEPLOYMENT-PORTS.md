@@ -612,6 +612,63 @@ cat .env
 # Verify all settings are correct
 ```
 
+### WhatsApp Connection Issues
+
+**Symptom: Infinite reconnection loop in logs**
+```
+[WEB] 🔄 Reconnecting WhatsApp for user: UserName
+[WEB] 🔄 Reconnecting WhatsApp for user: UserName
+...
+```
+
+**Solution:**
+The system now has built-in protection against infinite loops (added in v1.1):
+- Max 10 reconnection attempts
+- Exponential backoff delays
+- Automatic cleanup of old connections
+
+If you see this:
+1. **Wait for system to stop** (after 10 attempts, ~5 minutes)
+2. **Check logs for the reason:**
+   ```bash
+   pm2 logs rindell-ai --lines 50
+   ```
+3. **Common causes:**
+   - WhatsApp servers temporarily unavailable
+   - Network connectivity issues
+   - Authentication credentials corrupted
+
+**Recovery steps:**
+```bash
+# 1. Stop the application
+pm2 stop rindell-ai
+
+# 2. Clear the user's WhatsApp authentication
+rm -rf ~/Rindell-Ai/user-data/USER_ID/auth
+
+# 3. Restart the application
+pm2 start rindell-ai
+
+# 4. User should refresh the page and scan QR code again
+```
+
+**Symptom: Page stuck on QR code screen**
+
+**Solution:**
+1. Check if max reconnection attempts reached:
+   ```bash
+   pm2 logs rindell-ai | grep "Max reconnection"
+   ```
+2. If yes, the page will show "Connection Failed" message
+3. User should refresh the page to restart connection
+4. If issue persists, follow recovery steps above
+
+**Prevent issues:**
+- Ensure stable internet connection on VPS
+- Don't scan QR code with multiple devices
+- Wait for full connection before closing WhatsApp
+- Keep WhatsApp app updated on your phone
+
 ---
 
 ## 📝 Quick Reference

@@ -729,12 +729,76 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 ### Issue: WhatsApp Connection Problems
 
-**Clear WhatsApp session:**
-```bash
-cd ~/Rindell-Ai
-rm -rf user-data/*/auth
-rm -rf auth
+**Symptom: Infinite reconnection loop**
 ```
+[WEB] 🔄 Reconnecting WhatsApp for user: UserName (attempt 1/10, delay: 5s)
+[WEB] 🔄 Reconnecting WhatsApp for user: UserName (attempt 2/10, delay: 8s)
+...
+```
+
+**Solution:**
+The system has built-in protection (v1.1+):
+- Limits to 10 reconnection attempts
+- Uses exponential backoff delays
+- Automatically stops after max attempts
+
+**If connection keeps failing:**
+1. **Check the logs for specific errors:**
+   ```bash
+   pm2 logs rindell-ai-platform --lines 50
+   ```
+
+2. **Common causes:**
+   - Network connectivity issues
+   - WhatsApp servers temporarily down
+   - Corrupted authentication credentials
+   - Firewall blocking WhatsApp ports
+
+3. **Clear WhatsApp session and retry:**
+   ```bash
+   cd ~/Rindell-Ai
+   
+   # For web platform (multi-user)
+   rm -rf user-data/*/auth
+   
+   # For CLI mode
+   rm -rf auth
+   
+   # Restart application
+   pm2 restart rindell-ai-platform
+   
+   # User should refresh page and scan QR again
+   ```
+
+**Symptom: Page stuck on QR code screen**
+
+**Solution:**
+1. Check if max reconnection attempts reached:
+   ```bash
+   pm2 logs rindell-ai-platform | grep "Max reconnection"
+   ```
+
+2. If max attempts reached:
+   - User will see "Connection Failed" message on page
+   - User should refresh browser page
+   - If persists, clear auth (see above)
+
+3. **Verify WhatsApp connectivity:**
+   ```bash
+   # Check if WhatsApp Web is accessible
+   curl -I https://web.whatsapp.com
+   # Should return 200 OK
+   ```
+
+**Prevent connection issues:**
+- Ensure stable internet on VPS
+- Don't scan QR with multiple devices
+- Keep WhatsApp app updated
+- Ensure VPS time is synchronized:
+  ```bash
+  sudo timedatectl set-ntp on
+  sudo timedatectl status
+  ```
 
 **Restart application:**
 ```bash
