@@ -2,6 +2,12 @@
 
 > **Now a Complete SaaS Platform!** Beautiful web interface for AI-powered WhatsApp document analysis. No terminal, no technical setup - just visit a webpage and connect!
 
+## 🤔 New Here? Start with [HOW-IT-WORKS.md](HOW-IT-WORKS.md)
+
+**Don't know where to begin?** Read our friendly guide: [**How Does Rindell AI Work?**](HOW-IT-WORKS.md)
+
+This guide explains everything in simple terms with visual diagrams, real examples, and answers to common questions. Perfect for first-time users!
+
 ## 🎉 What's New: Web Platform!
 
 Rindell AI is now a **complete web-based platform** where users can:
@@ -377,8 +383,12 @@ Log Levels:
 
 ## 📚 Complete Documentation
 
+### Getting Started
+- **[HOW-IT-WORKS.md](HOW-IT-WORKS.md)** - Simple guide: How does this work? ⭐ **START HERE!**
+- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute quick start guide
+
 ### For Platform Owners
-- **[PLATFORM-OWNER.md](PLATFORM-OWNER.md)** - Quick start guide for owners ⭐ START HERE!
+- **[PLATFORM-OWNER.md](PLATFORM-OWNER.md)** - Quick start guide for owners
 - **[WEB-PLATFORM.md](WEB-PLATFORM.md)** - Complete web platform documentation
 - **[SELF-HOSTED.md](SELF-HOSTED.md)** - Self-hosted API server guide
 
