@@ -11,7 +11,8 @@
     "api:dev": "nodemon api-server.js",
     "test:api": "node test-api.js",
     "web": "node web-dashboard.js",
-    "web:dev": "nodemon web-dashboard.js"
+    "web:dev": "nodemon web-dashboard.js",
+    "platform": "node platform.js"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",
