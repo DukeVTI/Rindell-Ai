@@ -2,13 +2,25 @@
 
 > **Now a Complete SaaS Platform!** Beautiful web interface for AI-powered WhatsApp document analysis. No terminal, no technical setup - just visit a webpage and connect!
 
-## 🚨 Having Deployment Issues?
+## 🚨 APP NOT STARTING? READ THIS FIRST!
 
-**If you're getting "Cannot find module" errors or PM2 won't start:**
-- **→ [Quick Fix Guide (QUICK-FIX.md)](QUICK-FIX.md)** - 30-second solution ⚡
+**ERROR: "Cannot find module 'express'"?**
 
-**For comprehensive deployment help:**
-- **→ [Deployment Ready Guide (DEPLOYMENT-READY.md)](DEPLOYMENT-READY.md)** - Complete VPS deployment guide
+→ **[START-HERE-FIX.txt](START-HERE-FIX.txt)** ← CLICK THIS NOW! ⚡
+
+**Or run this command:**
+```bash
+npm install && pm2 restart rindell-mvp
+```
+
+That's it! Your app will start working.
+
+---
+
+## 🚨 Having Other Deployment Issues?
+
+- → **[Quick Fix Guide (QUICK-FIX.md)](QUICK-FIX.md)** - Other common issues
+- → **[Deployment Ready Guide (DEPLOYMENT-READY.md)](DEPLOYMENT-READY.md)** - Complete VPS deployment guide
 
 ## 🚀 Ready to Deploy to Production?
 
