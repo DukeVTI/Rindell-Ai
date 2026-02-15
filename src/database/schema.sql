@@ -19,11 +19,23 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS whatsapp_sessions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    session_data JSONB,
+    whatsapp_number VARCHAR(50),
+    connected BOOLEAN DEFAULT FALSE,
     connected_at TIMESTAMP,
-    last_active_at TIMESTAMP,
-    status VARCHAR(50) DEFAULT 'inactive',
+    disconnected_at TIMESTAMP,
+    session_data JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id)
+);
+
+-- Document Detections Table (for accuracy metrics)
+CREATE TABLE IF NOT EXISTS document_detections (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    success BOOLEAN NOT NULL,
+    notes TEXT,
+    detected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Documents Table

@@ -8,17 +8,21 @@
 
 const express = require('express');
 const cors = require('cors');
-const config = require('./config');
-const db = require('./database');
-const queueService = require('./services/queue');
-const documentService = require('./services/document');
-const documentProcessor = require('./services/document/processor');
+const path = require('path');
+const config = require('./src/config');
+const db = require('./src/database');
+const queueService = require('./src/services/queue');
+const documentService = require('./src/services/document');
+const documentProcessor = require('./src/services/document/processor');
+const whatsappService = require('./src/services/whatsapp');
+const whatsappHandler = require('./src/services/whatsapp/handler');
 
 // API routes
-const authRoutes = require('./api/auth');
-const documentsRoutes = require('./api/documents');
-const metricsRoutes = require('./api/metrics');
-const { authenticate, optionalAuth } = require('./api/middleware');
+const authRoutes = require('./src/api/auth');
+const documentsRoutes = require('./src/api/documents');
+const metricsRoutes = require('./src/api/metrics');
+const whatsappRoutes = require('./src/api/whatsapp');
+const { authenticate, optionalAuth } = require('./src/api/middleware');
 
 class Server {
   constructor() {
@@ -52,6 +56,13 @@ class Server {
       // Register document processor with queue
       queueService.registerProcessor(async (jobData) => {
         return await documentProcessor.process(jobData);
+      });
+
+      // Restore WhatsApp sessions from database
+      await whatsappService.restoreSessions((userId, message, fromJid) => {
+        whatsappHandler.handleMessage(userId, message, fromJid).catch(err => {
+          console.error('[Server] Error in WhatsApp message handler:', err);
+        });
       });
 
       // Setup Express middleware
@@ -104,16 +115,21 @@ class Server {
         status: 'running',
         endpoints: {
           auth: '/api/auth',
+          whatsapp: '/api/whatsapp',
           documents: '/api/documents',
           metrics: '/api/metrics',
         },
       });
     });
 
+    // Serve static files from public directory
+    this.app.use(express.static(path.join(__dirname, 'public')));
+
     // Public routes
     this.app.use('/api/auth', authRoutes);
 
     // Protected routes (require authentication)
+    this.app.use('/api/whatsapp', authenticate, whatsappRoutes);
     this.app.use('/api/documents', authenticate, documentsRoutes);
 
     // Metrics routes (optional auth for flexibility)
@@ -207,6 +223,9 @@ class Server {
    */
   async stop() {
     console.log('\n🛑 Shutting down server...');
+
+    // Disconnect WhatsApp sessions
+    await whatsappService.shutdown();
 
     // Close server
     if (this.server) {

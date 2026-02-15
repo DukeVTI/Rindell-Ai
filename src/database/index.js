@@ -199,6 +199,112 @@ class Database {
     const result = await this.query(query, params);
     return result.rows;
   }
+
+  /**
+   * WhatsApp Session Management
+   */
+  async createOrUpdateWhatsAppSession(sessionData) {
+    const query = `
+      INSERT INTO whatsapp_sessions (user_id, whatsapp_number, connected, connected_at, session_data)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (user_id) 
+      DO UPDATE SET 
+        whatsapp_number = EXCLUDED.whatsapp_number,
+        connected = EXCLUDED.connected,
+        connected_at = EXCLUDED.connected_at,
+        session_data = EXCLUDED.session_data,
+        updated_at = NOW()
+      RETURNING *
+    `;
+    
+    const values = [
+      sessionData.user_id,
+      sessionData.whatsapp_number,
+      sessionData.connected,
+      sessionData.connected_at,
+      sessionData.session_data,
+    ];
+
+    const result = await this.pool.query(query, values);
+    return result.rows[0];
+  }
+
+  async updateWhatsAppSession(userId, updates) {
+    const fields = [];
+    const values = [userId];
+    let paramCount = 2;
+
+    if (updates.connected !== undefined) {
+      fields.push(`connected = $${paramCount}`);
+      values.push(updates.connected);
+      paramCount++;
+    }
+
+    if (updates.disconnected_at) {
+      fields.push(`disconnected_at = $${paramCount}`);
+      values.push(updates.disconnected_at);
+      paramCount++;
+    }
+
+    if (fields.length === 0) return null;
+
+    const query = `
+      UPDATE whatsapp_sessions
+      SET ${fields.join(', ')}, updated_at = NOW()
+      WHERE user_id = $1
+      RETURNING *
+    `;
+
+    const result = await this.pool.query(query, values);
+    return result.rows[0];
+  }
+
+  async getActiveWhatsAppSessions() {
+    const query = `
+      SELECT * FROM whatsapp_sessions
+      WHERE connected = true
+      ORDER BY connected_at DESC
+    `;
+
+    const result = await this.pool.query(query);
+    return result.rows;
+  }
+
+  /**
+   * Document Detection Metrics
+   */
+  async recordDocumentDetection(userId, success, notes = null) {
+    const query = `
+      INSERT INTO document_detections (user_id, success, notes)
+      VALUES ($1, $2, $3)
+      RETURNING *
+    `;
+
+    const result = await this.pool.query(query, [userId, success, notes]);
+    return result.rows[0];
+  }
+
+  async getDetectionAccuracy(userId = null) {
+    const query = userId
+      ? `
+        SELECT 
+          COUNT(*) as total_detections,
+          SUM(CASE WHEN success THEN 1 ELSE 0 END) as successful_detections,
+          (SUM(CASE WHEN success THEN 1 ELSE 0 END)::float / COUNT(*)::float * 100) as accuracy_percentage
+        FROM document_detections
+        WHERE user_id = $1
+      `
+      : `
+        SELECT 
+          COUNT(*) as total_detections,
+          SUM(CASE WHEN success THEN 1 ELSE 0 END) as successful_detections,
+          (SUM(CASE WHEN success THEN 1 ELSE 0 END)::float / COUNT(*)::float * 100) as accuracy_percentage
+        FROM document_detections
+      `;
+
+    const result = await this.pool.query(query, userId ? [userId] : []);
+    return result.rows[0];
+  }
 }
 
 // Singleton instance

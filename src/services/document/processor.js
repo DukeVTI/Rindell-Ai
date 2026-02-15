@@ -10,7 +10,9 @@
 const db = require('../../database');
 const documentService = require('../document');
 const aiService = require('../ai');
+const whatsappHandler = require('../whatsapp/handler');
 const config = require('../../config');
+const fs = require('fs').promises;
 
 class DocumentProcessor {
   /**
@@ -23,10 +25,9 @@ class DocumentProcessor {
       userId,
       documentId,
       filename,
-      fileType,
-      fileBuffer,
-      messageId,
-      chatId,
+      filepath,
+      mimetype,
+      fromJid, // WhatsApp JID to send summary back to
     } = jobData;
 
     const startTime = Date.now();
@@ -44,9 +45,12 @@ class DocumentProcessor {
       const extractStart = Date.now();
       console.log('\n📄 Stage 1: Text Extraction');
       
+      // Read file from filepath
+      const fileBuffer = await fs.readFile(filepath);
+      
       const text = await documentService.extractText(
-        Buffer.from(fileBuffer),
-        fileType,
+        fileBuffer,
+        mimetype,
         filename
       );
 
@@ -90,10 +94,26 @@ class DocumentProcessor {
 
       console.log(`✅ Summary saved to database`);
 
-      // Stage 4: Format for WhatsApp
-      console.log('\n📱 Stage 4: WhatsApp Response');
-      
-      const whatsappMessage = aiService.formatForWhatsApp(summary);
+      // Stage 4: Send to WhatsApp (if fromJid provided)
+      if (fromJid) {
+        console.log('\n📱 Stage 4: Sending Summary to WhatsApp');
+        
+        try {
+          await whatsappHandler.sendSummary(userId, fromJid, filename, summary);
+          console.log(`✅ Summary sent to WhatsApp: ${fromJid}`);
+        } catch (whatsappError) {
+          console.error('⚠️  Failed to send WhatsApp message:', whatsappError.message);
+          // Don't fail the whole job if WhatsApp send fails
+        }
+      }
+
+      // Clean up temp file
+      try {
+        await fs.unlink(filepath);
+        console.log(`🗑️  Temp file cleaned up: ${filepath}`);
+      } catch (cleanupError) {
+        console.error('⚠️  Failed to clean up temp file:', cleanupError.message);
+      }
 
       // Calculate total processing time
       const totalDuration = Date.now() - startTime;
@@ -117,7 +137,7 @@ class DocumentProcessor {
       await db.recordMetric('processing_time', totalDuration, {
         documentId,
         filename,
-        fileType,
+        mimetype,
         textLength: text.length,
         success: true,
       });
@@ -138,9 +158,6 @@ class DocumentProcessor {
         totalDuration,
         meetsRequirement,
         summary,
-        whatsappMessage,
-        messageId,
-        chatId,
         metrics,
       };
 
