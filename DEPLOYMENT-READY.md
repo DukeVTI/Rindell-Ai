@@ -21,7 +21,13 @@ pm2 --version     # If not: sudo npm install -g pm2
 ```bash
 cd ~/rindell/Rindell-Ai
 git pull origin copilot/na
+
+# Install dependencies (IMPORTANT!)
 npm install
+
+# Verify dependencies installed
+ls node_modules | grep express
+# Should show: express
 ```
 
 ### Step 2: Setup Database (1 minute)
@@ -67,6 +73,12 @@ Save and exit (Ctrl+X, Y, Enter)
 ### Step 4: Deploy with PM2 (1 minute)
 
 ```bash
+# Run pre-flight check to verify everything is ready
+npm run preflight
+
+# Should show all ✅ checks passed
+# If any errors, fix them before proceeding
+
 # Start application
 pm2 start ecosystem.config.js
 
@@ -103,6 +115,47 @@ pm2 logs rindell-mvp --lines 20
 
 **Dashboard:** `http://YOUR-VPS-IP:8080/dashboard.html`  
 **API:** `http://YOUR-VPS-IP:3000`
+
+---
+
+## 🆘 URGENT FIX: Already Started PM2 Without Dependencies?
+
+**If you already ran `pm2 start` and got module errors, here's the fix:**
+
+```bash
+# 1. Stop the failed process
+pm2 stop rindell-mvp
+
+# 2. Navigate to project directory
+cd ~/rindell/Rindell-Ai
+
+# 3. Install dependencies (THIS IS THE KEY STEP!)
+npm install
+
+# 4. Run pre-flight check
+npm run preflight
+
+# 5. Restart with PM2
+pm2 restart rindell-mvp
+
+# 6. Verify it's working
+pm2 logs rindell-mvp --lines 20
+```
+
+**Expected output after restart:**
+```
+╔════════════════════════════════════════════════════════╗
+║         RINDELL MVP - INITIALIZING SERVER...          ║
+╚════════════════════════════════════════════════════════╝
+
+✅ Configuration validated
+✅ Database connected successfully
+✅ Queue service initialized
+✅ WhatsApp sessions restored
+✅ Server started on port 3000
+```
+
+If you see this, your application is running correctly! ✅
 
 ---
 
@@ -206,10 +259,58 @@ pm2 logs rindell-mvp --lines 50
 ```
 
 **Common issues:**
-1. Missing environment variables → Check `.env` file
-2. Database not initialized → Run `npm run db:init`
-3. Redis not running → `sudo systemctl start redis-server`
-4. Port already in use → Change ports in `.env`
+
+#### 1. Missing Dependencies (Error: Cannot find module 'express')
+
+**Symptom:** PM2 logs show `Error: Cannot find module 'express'` or similar module errors
+
+**Cause:** Dependencies were not installed before starting the application
+
+**Solution:**
+```bash
+cd ~/rindell/Rindell-Ai
+npm install
+pm2 restart rindell-mvp
+pm2 logs rindell-mvp
+```
+
+**Prevention:** Always run `npm install` after pulling code updates!
+
+#### 2. Missing Environment Variables
+
+**Symptom:** Application crashes with config errors
+
+**Solution:** Check `.env` file exists and has all required values:
+```bash
+cat .env | grep -E "DB_PASSWORD|GROQ_API_KEY|JWT_SECRET"
+```
+
+#### 3. Database Not Initialized
+
+**Symptom:** Database connection errors or table not found errors
+
+**Solution:**
+```bash
+npm run db:init
+pm2 restart rindell-mvp
+```
+
+#### 4. Redis Not Running
+
+**Symptom:** Queue connection errors
+
+**Solution:**
+```bash
+sudo systemctl start redis-server
+sudo systemctl enable redis-server
+pm2 restart rindell-mvp
+```
+
+#### 5. Port Already in Use
+
+**Symptom:** Error: listen EADDRINUSE :::3000
+
+**Solution:** Change ports in `.env` file or stop conflicting service
 
 ### WhatsApp Won't Connect
 
