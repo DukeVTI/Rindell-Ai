@@ -11,6 +11,7 @@
     "test:metrics": "node src/tests/metrics.test.js",
     "db:init": "node src/database/init.js",
     "preflight": "node preflight-check.js",
+    "diagnose": "node diagnose.js",
     "legacy:platform": "node platform.js",
     "legacy:direct": "node index.js"
   },
