@@ -12,6 +12,10 @@
 
 → **[STILL-NOT-WORKING.txt](STILL-NOT-WORKING.txt)** ← DO A CLEAN REINSTALL!
 
+**⚠️ If "npm install" says SUCCESS but node_modules doesn't exist:**
+
+→ **[NODE-MODULES-MISSING.txt](NODE-MODULES-MISSING.txt)** ← CRITICAL FIX!
+
 **Quick fix (if first time):**
 ```bash
 npm install && pm2 restart rindell-mvp
@@ -20,6 +24,11 @@ npm install && pm2 restart rindell-mvp
 **Clean reinstall (if npm install already ran):**
 ```bash
 rm -rf node_modules package-lock.json && npm cache clean --force && npm install && pm2 restart rindell-mvp
+```
+
+**Verify node_modules exists:**
+```bash
+ls -la | grep node_modules && ls node_modules/ | wc -l
 ```
 
 ---
