@@ -12,7 +12,7 @@ const path = require('path');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const Tesseract = require('tesseract.js');
-const config = require('../config');
+const config = require('../../config');
 
 class DocumentService {
   constructor() {

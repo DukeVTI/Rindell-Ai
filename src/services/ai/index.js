@@ -8,7 +8,7 @@
  */
 
 const axios = require('axios');
-const config = require('../config');
+const config = require('../../config');
 
 class AIService {
   constructor() {
