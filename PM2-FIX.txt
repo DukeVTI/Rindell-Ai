@@ -1,0 +1,104 @@
+════════════════════════════════════════════════════════════════════════
+               PM2 MODULE LOADING FIX
+════════════════════════════════════════════════════════════════════════
+
+YOUR SITUATION:
+- npm run diagnose says: ✅ All checks passed
+- PM2 crashes with: "Cannot find module 'dotenv'" or similar
+
+ROOT CAUSE:
+PM2 is using a different Node.js than your shell, or has incorrect paths.
+
+════════════════════════════════════════════════════════════════════════
+                    THE FIX
+════════════════════════════════════════════════════════════════════════
+
+Run these commands IN ORDER:
+
+1. DELETE THE OLD PM2 PROCESS:
+   cd ~/rindell/Rindell-Ai
+   pm2 delete rindell-mvp
+   pm2 kill
+
+2. VERIFY YOUR NODE VERSION:
+   which node
+   node --version
+   
+   (Should show something like: /home/azureuser/.nvm/versions/node/v20.20.0/bin/node)
+
+3. START FRESH WITH UPDATED CONFIG:
+   pm2 start ecosystem.config.js
+   
+4. CHECK LOGS IMMEDIATELY:
+   pm2 logs rindell-mvp --lines 50
+
+5. IF STILL FAILS, USE EXPLICIT NODE PATH:
+   
+   Edit ecosystem.config.js and change line 21 to:
+   interpreter: '/home/azureuser/.nvm/versions/node/v20.20.0/bin/node',
+   
+   (Use the path from step 2 "which node")
+   
+   Then:
+   pm2 delete rindell-mvp
+   pm2 start ecosystem.config.js
+
+════════════════════════════════════════════════════════════════════════
+                    VERIFY SUCCESS
+════════════════════════════════════════════════════════════════════════
+
+pm2 logs rindell-mvp --lines 20
+
+Should show:
+✅ Configuration validated
+✅ Database connected successfully
+✅ Queue service initialized
+✅ Server started on port 3000
+
+════════════════════════════════════════════════════════════════════════
+                    WHY THIS HAPPENS
+════════════════════════════════════════════════════════════════════════
+
+1. You installed Node.js with nvm
+2. PM2 was installed globally with npm
+3. PM2 uses system node, but your modules are in nvm node
+4. They have different module paths
+
+SOLUTION: Tell PM2 explicitly which Node.js to use
+
+════════════════════════════════════════════════════════════════════════
+                    ALTERNATIVE FIX
+════════════════════════════════════════════════════════════════════════
+
+If the above doesn't work, reinstall PM2 with your current Node:
+
+npm install -g pm2
+pm2 update
+pm2 start ecosystem.config.js
+
+This ensures PM2 uses the same Node.js as npm.
+
+════════════════════════════════════════════════════════════════════════
+                    EMERGENCY FIX
+════════════════════════════════════════════════════════════════════════
+
+If nothing else works, run directly without PM2:
+
+cd ~/rindell/Rindell-Ai
+npm start
+
+This runs: node server.js
+
+If THIS works but PM2 doesn't, it confirms PM2 node path issue.
+Use the "EXPLICIT NODE PATH" fix above.
+
+════════════════════════════════════════════════════════════════════════
+                    ACCESS YOUR APP
+════════════════════════════════════════════════════════════════════════
+
+Once pm2 logs show success:
+
+Dashboard: http://YOUR-VPS-IP:8080/dashboard.html
+API: http://YOUR-VPS-IP:3000
+
+════════════════════════════════════════════════════════════════════════

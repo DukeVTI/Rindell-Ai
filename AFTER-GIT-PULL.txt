@@ -1,0 +1,24 @@
+
+════════════════════════════════════════════════════════════════════════
+                    AFTER PULLING NEW CODE
+════════════════════════════════════════════════════════════════════════
+
+You just pulled new code. Now run these commands:
+
+    npm install
+    pm2 restart rindell-mvp
+
+That's it! Your app will restart with the new code.
+
+════════════════════════════════════════════════════════════════════════
+
+IF YOUR APP IS CURRENTLY BROKEN:
+
+Read this file immediately:
+    cat START-HERE-FIX.txt
+
+Or just run:
+    npm install
+    pm2 restart rindell-mvp
+
+════════════════════════════════════════════════════════════════════════

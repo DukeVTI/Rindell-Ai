@@ -4,6 +4,10 @@
 
 Congratulations! Rindell AI is now a complete web-based platform. You provide the infrastructure and Groq API key, and unlimited users can sign up and use the service through a beautiful web interface.
 
+## 🤔 New to Rindell AI?
+
+**Don't understand how this works?** Read [**HOW-IT-WORKS.md**](HOW-IT-WORKS.md) first - it explains everything in simple terms with diagrams!
+
 ## ⚡ Super Quick Start (3 Steps)
 
 ### 1. Get Groq API Key
