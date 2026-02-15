@@ -20,8 +20,11 @@ module.exports = {
       // Entry point
       script: './server.js',
       
-      // Working directory
-      cwd: './',
+      // Node.js interpreter (use the same one as current shell)
+      interpreter: 'node', // PM2 will use the node in PATH
+      
+      // Working directory (use absolute path for reliability)
+      cwd: __dirname,
       
       // Node.js args
       node_args: '',

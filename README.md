@@ -16,6 +16,10 @@
 
 → **[NODE-MODULES-MISSING.txt](NODE-MODULES-MISSING.txt)** ← CRITICAL FIX!
 
+**🔥 If diagnostics PASS but PM2 still crashes:**
+
+→ **[PM2-FIX.txt](PM2-FIX.txt)** ← PM2 NODE PATH FIX!
+
 **Quick fix (if first time):**
 ```bash
 npm install && pm2 restart rindell-mvp

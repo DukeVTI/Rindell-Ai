@@ -42,6 +42,30 @@ After ls node_modules/, you should see:
 After pm2 logs, you should see:
   ✅ Configuration validated
   ✅ Database connected successfully
+  ✅ Server started on port 3000
+
+═══════════════════════════════════════════════════════════════════════════
+  🚨 SPECIAL CASE: DIAGNOSTICS PASS BUT PM2 CRASHES! 🚨
+═══════════════════════════════════════════════════════════════════════════
+
+If npm run diagnose shows "✅ NO ISSUES FOUND"
+BUT pm2 restart still crashes with "Cannot find module"...
+
+This means PM2 is using a DIFFERENT Node.js than your shell!
+
+IMMEDIATE FIX:
+──────────────────────────────────────────────────────────────────────────
+pm2 delete rindell-mvp
+pm2 kill
+pm2 start ecosystem.config.js
+
+If that doesn't work, read: PM2-FIX.txt for detailed instructions!
+
+═══════════════════════════════════════════════════════════════════════════
+
+After pm2 logs, you should see:
+  ✅ Configuration validated
+  ✅ Database connected successfully
   ✅ Queue service initialized
   ✅ Server started on port 3000
 
