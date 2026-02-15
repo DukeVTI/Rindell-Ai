@@ -200,6 +200,8 @@ async function startWhatsAppForUser(userId) {
     reconnectAttempts: 0, // Always start fresh at 0
     maxReconnectAttempts: 10,
     reconnectDelay: 5000,
+    connectionStartTime: Date.now(), // Track when connection started
+    initializing: true, // Flag to indicate we're waiting for first connection/QR
   };
   
   whatsappInstances.set(userId, instance);
@@ -212,6 +214,7 @@ async function startWhatsAppForUser(userId) {
       // Store QR code for web display
       instance.qrCode = qr;
       session.qrCode = qr;
+      instance.initializing = false; // QR generated, no longer initializing
       console.log(`🔲 QR code generated for user: ${session.name}`);
       
       // Reset reconnect attempts on new QR code
@@ -222,6 +225,7 @@ async function startWhatsAppForUser(userId) {
       instance.connected = true;
       instance.reconnecting = false;
       instance.reconnectAttempts = 0;
+      instance.initializing = false; // Successfully connected
       session.whatsappConnected = true;
       
       // Save updated session
@@ -242,13 +246,49 @@ async function startWhatsAppForUser(userId) {
         ? lastDisconnect.error.output?.statusCode
         : null;
       
+      const errorMessage = lastDisconnect?.error?.message || 'Unknown error';
+      const connectionDuration = Date.now() - instance.connectionStartTime;
+      
+      // Log detailed error information
+      console.log(
+        `🔌 Connection closed for user: ${session.name} ` +
+        `(duration: ${Math.round(connectionDuration / 1000)}s, ` +
+        `status: ${statusCode || 'none'}, ` +
+        `error: ${errorMessage})`
+      );
+      
       // Don't reconnect if logged out
       if (statusCode === DisconnectReason.loggedOut) {
         console.log(`🚪 User logged out: ${session.name}`);
         instance.reconnecting = false;
+        instance.initializing = false;
         whatsappInstances.delete(userId);
         return;
       }
+      
+      // If connection closes very quickly during initialization (< 3 seconds)
+      // and we haven't generated a QR yet, wait longer before reconnecting
+      if (instance.initializing && connectionDuration < 3000) {
+        console.log(
+          `⏱️  Connection closed too quickly during initialization for ${session.name}. ` +
+          `Waiting 10 seconds before retry...`
+        );
+        instance.initializing = false; // Mark as no longer initializing
+        instance.reconnectAttempts++;
+        instance.reconnecting = true;
+        
+        setTimeout(() => {
+          instance.reconnecting = false;
+          startWhatsAppForUser(userId).catch(error => {
+            console.error(`❌ Reconnection failed for ${session.name}:`, error.message);
+            instance.reconnecting = false;
+          });
+        }, 10000); // Wait 10 seconds on quick failure
+        return;
+      }
+      
+      // Mark as no longer initializing
+      instance.initializing = false;
       
       // Check reconnection attempts
       if (instance.reconnectAttempts >= instance.maxReconnectAttempts) {
