@@ -2,12 +2,21 @@
 
 > **Now a Complete SaaS Platform!** Beautiful web interface for AI-powered WhatsApp document analysis. No terminal, no technical setup - just visit a webpage and connect!
 
+## 🚨 Having Deployment Issues?
+
+**If you're getting "Cannot find module" errors or PM2 won't start:**
+- **→ [Quick Fix Guide (QUICK-FIX.md)](QUICK-FIX.md)** - 30-second solution ⚡
+
+**For comprehensive deployment help:**
+- **→ [Deployment Ready Guide (DEPLOYMENT-READY.md)](DEPLOYMENT-READY.md)** - Complete VPS deployment guide
+
 ## 🚀 Ready to Deploy to Production?
 
 **Choose your deployment method:**
 
+- **[→ MVP Deployment (NEW Architecture)](DEPLOYMENT-READY.md)** - Latest modular MVP with PostgreSQL, Redis, full features ⭐ **Recommended!**
 - **[→ Full VPS Deployment with Domain & SSL](VPS-DEPLOYMENT.md)** - Complete guide with NGINX, SSL, and domain setup
-- **[→ Port-Based VPS Deployment (IP Access)](VPS-DEPLOYMENT-PORTS.md)** - Deploy on VPS with other services using custom ports ⭐ **New!**
+- **[→ Port-Based VPS Deployment (IP Access)](VPS-DEPLOYMENT-PORTS.md)** - Deploy on VPS with other services using custom ports
 
 ## 🤔 New Here? Start with [HOW-IT-WORKS.md](HOW-IT-WORKS.md)
 
