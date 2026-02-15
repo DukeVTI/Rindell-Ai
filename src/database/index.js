@@ -48,6 +48,12 @@ class Database {
       await this.pool.query(schema);
       console.log('✅ Database schema initialized');
     } catch (error) {
+      // PostgreSQL error code 42710 = "duplicate object" (trigger already exists)
+      // This is safe to ignore - it means schema is already initialized
+      if (error.code === '42710') {
+        console.log('✅ Database schema already initialized');
+        return;
+      }
       console.error('❌ Schema initialization failed:', error.message);
       throw error;
     }
