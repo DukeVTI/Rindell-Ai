@@ -7,10 +7,19 @@ You're getting "Cannot find module 'express'" error because node_modules
 folder doesn't exist. PM2 is trying to start the app but all the 
 dependencies are missing!
 
-THE SOLUTION (RUN THESE 3 COMMANDS):
+THE SOLUTION (RUN THESE COMMANDS):
 ═════════════════════════════════════════
 
 cd ~/rindell/Rindell-Ai
+
+# If this is your FIRST TIME or npm install hasn't been run yet:
+npm install
+pm2 restart rindell-mvp
+
+# If npm install ALREADY RAN but app still crashes:
+# (This forces a clean reinstall)
+rm -rf node_modules package-lock.json
+npm cache clean --force
 npm install
 pm2 restart rindell-mvp
 

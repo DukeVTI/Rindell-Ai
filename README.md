@@ -4,16 +4,23 @@
 
 ## 🚨 APP NOT STARTING? READ THIS FIRST!
 
-**ERROR: "Cannot find module 'express'"?**
+**ERROR: "Cannot find module 'express'" or similar?**
 
 → **[START-HERE-FIX.txt](START-HERE-FIX.txt)** ← CLICK THIS NOW! ⚡
 
-**Or run this command:**
+**If "npm install" already ran but app still crashes:**
+
+→ **[STILL-NOT-WORKING.txt](STILL-NOT-WORKING.txt)** ← DO A CLEAN REINSTALL!
+
+**Quick fix (if first time):**
 ```bash
 npm install && pm2 restart rindell-mvp
 ```
 
-That's it! Your app will start working.
+**Clean reinstall (if npm install already ran):**
+```bash
+rm -rf node_modules package-lock.json && npm cache clean --force && npm install && pm2 restart rindell-mvp
+```
 
 ---
 
