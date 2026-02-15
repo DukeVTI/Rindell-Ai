@@ -1,0 +1,51 @@
+═══════════════════════════════════════════════════════════════════════════
+   🚨 YOUR APP IS CRASHING BECAUSE YOU FORGOT TO RUN "npm install" 🚨
+═══════════════════════════════════════════════════════════════════════════
+
+THE PROBLEM:
+You're getting "Cannot find module 'express'" error because node_modules
+folder doesn't exist. PM2 is trying to start the app but all the 
+dependencies are missing!
+
+THE SOLUTION (RUN THESE 3 COMMANDS):
+═════════════════════════════════════════
+
+cd ~/rindell/Rindell-Ai
+npm install
+pm2 restart rindell-mvp
+
+═══════════════════════════════════════════════════════════════════════════
+
+THAT'S IT! After npm install finishes, your app will start successfully.
+
+You can verify it's working:
+pm2 logs rindell-mvp
+
+You should see:
+✅ Configuration validated
+✅ Database connected successfully  
+✅ Server started on port 3000
+
+Then access your dashboard at:
+http://YOUR-VPS-IP:8080/dashboard.html
+
+═══════════════════════════════════════════════════════════════════════════
+WHY THIS HAPPENED:
+
+You need to install Node.js packages BEFORE starting PM2.
+The correct order is:
+
+1. npm install     ← ALWAYS DO THIS FIRST!
+2. pm2 start       ← THEN start the app
+
+You did:
+1. pm2 start       ← Started first (WRONG)
+2. (no npm install) ← Forgot this step
+
+═══════════════════════════════════════════════════════════════════════════
+
+RUN THIS NOW:
+  
+  npm install
+
+Then your app will work! 🎉
